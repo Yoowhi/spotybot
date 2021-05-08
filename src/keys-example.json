@@ -2,5 +2,6 @@
     "spotify": {
         "clientId": "***",
         "clientSecret": "***"
-    }
+    },
+    "telegram": "***"
 }
