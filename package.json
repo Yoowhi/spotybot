@@ -1,0 +1,31 @@
+{
+  "name": "spotybot",
+  "version": "0.0.1",
+  "description": "Telegram bot for checking new releases in Spotify, depending on user's subscriptions",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc -b tsconfig.json",
+    "start": "node dist/app.js",
+    "bs": "tsc -b tsconfig.json && node dist/app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yoowhi/spotybot.git"
+  },
+  "keywords": [
+    "Telegram",
+    "Spotify",
+    "bot"
+  ],
+  "author": "Ivan Yakimov",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/Yoowhi/spotybot/issues"
+  },
+  "homepage": "https://github.com/Yoowhi/spotybot#readme",
+  "devDependencies": {
+    "@types/node": "^15.0.2",
+    "@types/spotify-api": "^0.0.8",
+    "typescript": "^4.2.4"
+  }
+}
