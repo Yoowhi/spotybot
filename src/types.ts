@@ -1,0 +1,1 @@
+export type AlbumInfo = {artistId: string, albumId: string, albumUrl: string};
