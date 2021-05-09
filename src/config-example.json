@@ -9,5 +9,6 @@
         "dbName": "***",
         "userCollection": "***",
         "artistCollection": "***"
-    }
+    },
+    "logLevel": 2
 }
