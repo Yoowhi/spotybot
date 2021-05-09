@@ -1,7 +1,7 @@
 import EventEmitter from "events";
 import { Telegraf } from "telegraf";
 import * as BotMessages from "./strings.json";
-import { BotCommand, BotCommandData } from "./types";
+import { BotCommand } from "./types";
 
 interface TelegramEvents {
     'new_user': (chatId: number) => void;
