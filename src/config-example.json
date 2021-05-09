@@ -1,0 +1,13 @@
+{
+    "spotify": {
+        "clientId": "***",
+        "clientSecret": "***"
+    },
+    "telegram": "***",
+    "mongo": {
+        "uri": "***",
+        "dbName": "***",
+        "userCollection": "***",
+        "artistCollection": "***"
+    }
+}
