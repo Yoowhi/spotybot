@@ -4,3 +4,10 @@ export type BotCommandData = { artistName?: string };
 
 export type User = { chatId: number, subscriptions: string[] };
 export type Artist = { artistId: string, latestReleaseId: string, subscribedChatIds: number[]};
+
+export enum LogLevel {
+    ERROR,
+    WARNING,
+    INFO,
+    DEBUG
+}
