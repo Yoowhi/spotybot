@@ -26,75 +26,70 @@ export class Mongo {
         });
     }
 
-    public async addUser(chatId: number) {
-        return await this.userCollection.insertOne({chatId: chatId, subscriptions: []}).then(() => true, () => false);
-    }
-
     public async getUser(chatId: number) {
         return await this.userCollection.findOne({chatId: chatId});
-    }
-
-    public async removeUser(chatId: number) {
-        return await this.getUser(chatId).then((user) => {
-            if (user) {
-                for (const artistId of user.subscriptions) {
-                    this.removeArtistFromUser(chatId, artistId);
-                }
-            }
-        });
-    }
-
-    public async artistExists(artistId: string) {
-        return await this.artistCollection.findOne({artistId: artistId}).then((artist) => {
-            return !!artist;
-        });
-    }
-
-    public async addArtistToUser(chatId: number, artistId: string) {
-        return await this.userCollection.updateOne({chatId: chatId}, {$push: {subscriptions: artistId}}).then(() => true, () => false);
-    }
-
-    public async getArtists() {
-        return await this.artistCollection.find({});
     }
 
     public async getArtist(artistId: string) {
         return await this.artistCollection.findOne({artistId: artistId});
     }
 
-    public async updateArtist(artistId: string, latestReleaseId: string) {
-        return await this.artistCollection.updateOne({artistId: artistId}, {$set: {latestReleaseId: latestReleaseId}}).then(() => true, () => false);
+    public async addUser(chatId: number) {
+        return await this.userCollection.insertOne({chatId: chatId, subscriptions: []})
+        .then((user) => true, () => false);
     }
 
-    public async removeArtistFromUser(chatId: number, artistId: string) {
-        return await this.getUser(chatId).then((user) => {
-            if (user) {
-                if (user.subscriptions.includes(artistId)) {
-                    this.getArtist(artistId).then((artist) => {
-                        if (artist) {
-                            if (artist.subscribedChatIds.includes(chatId)) {
-                                delete user.subscriptions[user.subscriptions.indexOf(artistId)];
-                                this.userCollection.updateOne({chatId: chatId}, {subscriptions: user.subscriptions})
-                                .then(() => {
-                                    delete artist.subscribedChatIds[artist.subscribedChatIds.indexOf(chatId)];
-                                    this.artistCollection.updateOne({artistId: artistId}, {subscribedChatIds: artist.subscribedChatIds});
-                                });
-                            } else {
-                                return false;
-                            }
-                        } else {
-                            return false;
-                        }
-                    })
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
+    public async addArtist(artistId: string, latestReleaseId: string) {
+        return await this.artistCollection.insertOne({artistId: artistId, latestReleaseId: latestReleaseId, subscribedChatIds: []})
+        .then((artist) => true, () => false);
+    }
+
+    public async removeUser(chatId: number) {
+        const user = await this.getUser(chatId);
+        if (user) {
+            for (const artistId of user.subscriptions) {
+                await this.unsubscribeUser(chatId, artistId);
             }
-        });
+            return true;
+        } else return false;
     }
 
-    // removeArtistFromUser: (userId: number, artistId: string) => Promise<boolean>;
+    public async unsubscribeUser(chatId: number, artistId: string) {
+        const artist = await this.getArtist(artistId);
+        if (artist) {
+            if (artist && artist.subscribedChatIds.includes(chatId)) {
+                const id = artist.subscribedChatIds.indexOf(chatId);
+                delete artist.subscribedChatIds[id];
+                if (artist.subscribedChatIds.length > 0) {
+                    this.artistCollection.updateOne({artistId: artist.artistId}, {$set: {subscribedChatIds: artist.subscribedChatIds}});
+                } else {
+                    this.artistCollection.deleteOne({artistId: artist.artistId});
+                }
+                const user = await this.getUser(chatId);
+                if (user && user.subscriptions.includes(artistId)) {
+                    const id = user.subscriptions.indexOf(artistId);
+                    delete user.subscriptions[id];
+                    this.userCollection.updateOne({chatId: chatId}, {$set: {subscriptions: user.subscriptions}});
+                    return true;
+                } else return false;
+            } else return false;
+        } else return false;
+    }
+
+    public async subscribeUser(chatId: number, artistId: string) {
+        const user = await this.getUser(chatId);
+        if (user) {
+            if (user && !user.subscriptions.includes(artistId)) {
+                user.subscriptions.push(artistId);
+                this.userCollection.updateOne({chatId: chatId}, {$set: {subscriptions: user.subscriptions}});
+                const artist = await this.getArtist(artistId);
+                if (artist && !artist.subscribedChatIds.includes(chatId)) {
+                    artist.subscribedChatIds.push(chatId);
+                    this.artistCollection.updateOne({artistId: artist.artistId}, {$set: {subscribedChatIds: artist.subscribedChatIds}});
+                    return true;
+                } else return false;
+            } else return false;
+        } else return false;
+    }
 
 }
