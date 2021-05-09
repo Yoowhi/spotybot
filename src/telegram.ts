@@ -51,15 +51,15 @@ export class Telegram extends EventEmitter {
         return this.bot.launch();
     }
 
-    public commandReply(chatId: number, command: BotCommand, success: boolean, data?: BotCommandData) {
+    public commandReply(chatId: number, command: BotCommand, success: boolean) {
         switch (command) {
             case 'add':
-                if (success) this.sendMessage(chatId, data?.artistName + BotMessages.artist_added);
-                else this.sendMessage(chatId, BotMessages.artist_not_found);
+                if (success) this.sendMessage(chatId, BotMessages.artist_added);
+                else this.sendMessage(chatId, BotMessages.cant_add_artist);
                 break;
             case 'remove':
-                if (success) this.sendMessage(chatId, data?.artistName + BotMessages.artist_removed);
-                else this.sendMessage(chatId, BotMessages.artist_not_found);
+                if (success) this.sendMessage(chatId, BotMessages.artist_removed);
+                else this.sendMessage(chatId, BotMessages.cant_add_artist);
                 break;
             default:
                 break;
