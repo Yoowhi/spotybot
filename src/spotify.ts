@@ -55,4 +55,18 @@ export class Spotify {
         }
         return result;
     }
+
+    public async getNewArtist(artistId: string) {
+        return await this.api.getArtistAlbums(artistId, {limit: 1})
+        .then((data) => {
+            return {
+                artistId: artistId,
+                albumId: data.body.items[0].id,
+                albumUrl: data.body.items[0].external_urls.spotify
+            }
+        })
+        .catch((reason) => {
+            return null;
+        });
+    }
 }

@@ -3,26 +3,21 @@ import { mongo as conf } from "./config.json";
 import { Artist, User } from "./types";
 
 export class Mongo {
-    private uri: string;
     private client: MongoClient;
-    private db: Db | undefined;
+    //@ts-ignore
     private artistCollection: Collection<Artist>;
+    //@ts-ignore
     private userCollection: Collection<User>;
 
     constructor(uri: string) {
-        this.uri = uri;
         this.client = new MongoClient(uri, { useUnifiedTopology: true });
-
-        this.db = this.client.db(conf.dbName);
-        this.userCollection = this.db.collection(conf.userCollection);
-        this.artistCollection = this.db.collection(conf.artistCollection);
     }
 
     public init() {
         return this.client.connect().then(() => {
-            this.db = this.client.db(conf.dbName);
-            this.userCollection = this.db.collection(conf.userCollection);
-            this.artistCollection = this.db.collection(conf.artistCollection);
+            const db = this.client.db(conf.dbName);
+            this.userCollection = db.collection(conf.userCollection);
+            this.artistCollection = db.collection(conf.artistCollection);
         });
     }
 

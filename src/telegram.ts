@@ -30,8 +30,6 @@ export class Telegram extends EventEmitter {
         this.bot = new Telegraf(token);
         this.bot.start((ctx) => {
             this.emit('new_user', ctx.chat.id);
-            ctx.reply(BotMessages.welcome);
-            ctx.reply(BotMessages.controls);
         });
         this.initCommands();
         this.bot.on('message', (ctx) => {
@@ -66,6 +64,11 @@ export class Telegram extends EventEmitter {
             default:
                 break;
         }
+    }
+
+    public welcomeUser(chatId: number) {
+        this.bot.telegram.sendMessage(chatId, BotMessages.welcome);
+        this.bot.telegram.sendMessage(chatId, BotMessages.controls);
     }
 
     private sendMessage(chatId: number, text: string) {
