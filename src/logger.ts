@@ -3,7 +3,7 @@ import { logLevel as currentLevel } from "./config.json"
 
 
 export function applog(message: string, logLevel: LogLevel, object?: Object) {
-    if (logLevel >= currentLevel) {
+    if (logLevel <= currentLevel) {
         let log = console.log;
         let text = "";
         switch (logLevel) {
