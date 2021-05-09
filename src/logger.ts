@@ -29,5 +29,5 @@ export function applog(message: string, logLevel: LogLevel, object?: Object) {
         } else {
             log(text);
         }
-    }d
+    }
 }
