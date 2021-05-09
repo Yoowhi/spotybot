@@ -54,7 +54,7 @@ export class Mongo {
         if (artist) {
             if (artist && artist.subscribedChatIds.includes(chatId)) {
                 const id = artist.subscribedChatIds.indexOf(chatId);
-                delete artist.subscribedChatIds[id];
+                artist.subscribedChatIds.splice(id, 1);
                 if (artist.subscribedChatIds.length > 0) {
                     this.artistCollection.updateOne({artistId: artist.artistId}, {$set: {subscribedChatIds: artist.subscribedChatIds}});
                 } else {
@@ -63,7 +63,7 @@ export class Mongo {
                 const user = await this.getUser(chatId);
                 if (user && user.subscriptions.includes(artistId)) {
                     const id = user.subscriptions.indexOf(artistId);
-                    delete user.subscriptions[id];
+                    user.subscriptions.splice(id, 1);
                     this.userCollection.updateOne({chatId: chatId}, {$set: {subscriptions: user.subscriptions}});
                     return true;
                 } else return false;
@@ -83,7 +83,7 @@ export class Mongo {
                     this.artistCollection.updateOne({artistId: artist.artistId}, {$set: {subscribedChatIds: artist.subscribedChatIds}});
                     return true;
                 } else return false;
-            } else return false;
+            } else return true;
         } else return false;
     }
 

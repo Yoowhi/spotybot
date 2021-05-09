@@ -59,7 +59,7 @@ export class Telegram extends EventEmitter {
                 break;
             case 'remove':
                 if (success) this.sendMessage(chatId, BotMessages.artist_removed);
-                else this.sendMessage(chatId, BotMessages.cant_add_artist);
+                else this.sendMessage(chatId, BotMessages.cant_remove_artist);
                 break;
             default:
                 break;
