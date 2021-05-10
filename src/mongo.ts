@@ -26,7 +26,7 @@ export class Mongo {
         applog("Requesting user from DB...", LogLevel.DEBUG, {chatId});
         return await this.userCollection.findOne({chatId: chatId})
         .then((user) => {
-            if (user) applog("User found in DB", LogLevel.DEBUG, user);
+            if (user) applog("User found in DB", LogLevel.DEBUG, {chatId});
             else applog("User not found in DB", LogLevel.DEBUG, {chatId});
             return user;
         });
@@ -36,7 +36,7 @@ export class Mongo {
         applog("Requesting artist from DB...", LogLevel.DEBUG, {artistId});
         return await this.artistCollection.findOne({artistId: artistId})
         .then((artist) => {
-            if (artist) applog("Artist found in DB", LogLevel.DEBUG, artist);
+            if (artist) applog("Artist found in DB", LogLevel.DEBUG, {artistId});
             else applog("Artist not found in DB", LogLevel.DEBUG, {artistId});
             return artist;
         });

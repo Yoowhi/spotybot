@@ -58,7 +58,7 @@ function updateArtists() {
                                 telegram.sendRelease(chatIds, album.albumUrl);
                             }
                         } else {
-                            applog("Artist latest release did not changed", LogLevel.DEBUG, {album});
+                            applog("Artist latest release did not changed", LogLevel.DEBUG, {artistid: artist.artistId});
                         }
                     } else {
                         applog("Requested artist does not exist", LogLevel.ERROR, {album});
