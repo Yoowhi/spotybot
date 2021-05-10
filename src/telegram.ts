@@ -1,7 +1,8 @@
 import EventEmitter from "events";
 import { Telegraf } from "telegraf";
+import { applog } from "./logger";
 import * as BotMessages from "./strings.json";
-import { BotCommand } from "./types";
+import { BotCommand, LogLevel } from "./types";
 
 interface TelegramEvents {
     'new_user': (chatId: number) => void;
@@ -35,15 +36,18 @@ export class Telegram extends EventEmitter {
         this.bot.on('message', (ctx) => {
             //@ts-ignore
             const message = ctx.message.text;
+            applog("Got new message", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
             const artistId = this.parseUrl(message);
             if (artistId) {
+                applog("artistId parsed", LogLevel.DEBUG, {artistId: artistId, chatid: ctx.chat.id});
                 this.emit("artist_added", ctx.chat.id, artistId);
             } else {
+                applog("artistId not parsed", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
                 ctx.reply(BotMessages.url_parse_failed);
             }
         });
         this.bot.catch((error) => {
-            // TODO Error
+            applog("Telegram API exception", LogLevel.ERROR, {error});
         });
     }
 
@@ -52,6 +56,7 @@ export class Telegram extends EventEmitter {
     }
 
     public commandReply(chatId: number, command: BotCommand, success: boolean) {
+        applog("Replying to user", LogLevel.DEBUG, {chatId, command, success});
         switch (command) {
             case 'add':
                 if (success) this.sendMessage(chatId, BotMessages.artist_added);
@@ -67,6 +72,7 @@ export class Telegram extends EventEmitter {
     }
 
     public welcomeUser(chatId: number) {
+        applog("Welcoming new user", LogLevel.DEBUG, {chatId});
         this.bot.telegram.sendMessage(chatId, BotMessages.welcome);
         this.bot.telegram.sendMessage(chatId, BotMessages.controls);
     }
@@ -74,17 +80,21 @@ export class Telegram extends EventEmitter {
     public sendRelease(chatId: number, url: string) {
         this.sendMessage(chatId, url)
         .then(() => {
-            // TODO log
+            applog("Release sent to user", LogLevel.DEBUG, {chatId, releaseUrl: url});
         });
     }
 
     private sendMessage(chatId: number, text: string) {
         return this.bot.telegram.sendMessage(chatId, text)
+        .then((message) => {
+            applog("Message sent to user", LogLevel.DEBUG, {chatId, messageId: message.message_id});
+        })
         .catch((reason) => {
             if (reason.description == "Forbidden: bot was blocked by the user") {
+                applog("Bot was blocked by user", LogLevel.DEBUG, chatId);
                 this.emit('bot_blocked', chatId)
             } else {
-                throw reason;
+                applog("Telegram API error while sending message", LogLevel.ERROR, reason);
             }
         });
     }
@@ -92,23 +102,30 @@ export class Telegram extends EventEmitter {
     private initCommands() {
         this.bot.command('add', (ctx) => {
             const message = ctx.message.text;
+            applog("Command /add received", LogLevel.DEBUG, {chatId: ctx.chat.id, text: message});
             const artistId = this.parseUrl(message);
             if (artistId) {
+                applog("artistId parsed", LogLevel.DEBUG, {artistId: artistId, chatid: ctx.chat.id});
                 this.emit("artist_added", ctx.chat.id, artistId);
             } else {
+                applog("artistId not parsed", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
                 ctx.reply(BotMessages.url_parse_failed);
             }
         });
         this.bot.command('remove', (ctx) => {
             const message = ctx.message.text;
+            applog("Command /remove received", LogLevel.DEBUG, {chatId: ctx.chat.id, text: message});
             const artistId = this.parseUrl(message);
             if (artistId) {
+                applog("artistId parsed", LogLevel.DEBUG, {artistId: artistId, chatid: ctx.chat.id});
                 this.emit("artist_removed", ctx.chat.id, artistId);
             } else {
+                applog("artistId not parsed", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
                 ctx.reply(BotMessages.url_parse_failed);
             }
         });
         this.bot.command('help', (ctx) => {
+            applog("Command /help received", LogLevel.DEBUG, {chatId: ctx.chat.id});
             ctx.reply(BotMessages.controls);
         });
     }
