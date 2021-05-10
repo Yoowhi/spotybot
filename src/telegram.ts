@@ -36,14 +36,16 @@ export class Telegram extends EventEmitter {
         this.bot.on('message', (ctx) => {
             //@ts-ignore
             const message = ctx.message.text;
-            applog("Got new message", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
-            const artistId = this.parseUrl(message);
-            if (artistId) {
-                applog("artistId parsed", LogLevel.DEBUG, {artistId: artistId, chatid: ctx.chat.id});
-                this.emit("artist_added", ctx.chat.id, artistId);
-            } else {
-                applog("artistId not parsed", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
-                ctx.reply(BotMessages.url_parse_failed);
+            if (message != undefined) {
+                applog("Got new message", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
+                const artistId = this.parseUrl(message);
+                if (artistId) {
+                    applog("artistId parsed", LogLevel.DEBUG, {artistId: artistId, chatid: ctx.chat.id});
+                    this.emit("artist_added", ctx.chat.id, artistId);
+                } else {
+                    applog("artistId not parsed", LogLevel.DEBUG, {chatid: ctx.chat.id, message: message});
+                    ctx.reply(BotMessages.url_parse_failed);
+                }
             }
         });
         this.bot.catch((error) => {

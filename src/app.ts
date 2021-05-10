@@ -46,6 +46,8 @@ function updateArtists() {
         .then((albums) => {
             applog("Got " + albums.length + " albums", LogLevel.DEBUG);
             if (albums.length != artistIds.length) applog("Requested and received albums do not match", LogLevel.ERROR, {requested: artistIds.length, received: albums.length});
+            let counter = 0;
+            let newAlbumCounter = 0;
             for (const album of albums) {
                 db.getArtist(album.artistId)
                 .then((artist) => {
@@ -57,11 +59,16 @@ function updateArtists() {
                             for (const chatIds of artist.subscribedChatIds) {
                                 telegram.sendRelease(chatIds, album.albumUrl);
                             }
+                            newAlbumCounter++;
                         } else {
                             applog("Artist latest release did not changed", LogLevel.DEBUG, {artistid: artist.artistId});
                         }
                     } else {
                         applog("Requested artist does not exist", LogLevel.ERROR, {album});
+                    }
+                    counter++;
+                    if (counter == albums.length) {
+                        applog("Artists updated", LogLevel.INFO, {newReleases: newAlbumCounter});
                     }
                 });
             }
