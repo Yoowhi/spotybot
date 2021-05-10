@@ -41,7 +41,7 @@ function updateArtists() {
         artistIds.push(artist.artistId);
     })
     .then(() => {
-        applog("Got " + artistIds.length + " artists", LogLevel.DEBUG, {artistIds});
+        applog("Got " + artistIds.length + " artists", LogLevel.DEBUG);
         spotify.getLatestAlbums(artistIds)
         .then((albums) => {
             applog("Got " + albums.length + " albums", LogLevel.DEBUG);
@@ -116,7 +116,6 @@ function subscribeArtistAdded() {
                 });
             } else {
                 applog("New artist detected", LogLevel.DEBUG, {artistId});
-                applog("Requesting new artist from Spotify...", LogLevel.DEBUG, {artistId});
                 spotify.getNewArtist(artistId)
                 .then((result) => {
                     if (result) {
