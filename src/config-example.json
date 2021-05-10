@@ -10,5 +10,6 @@
         "userCollection": "***",
         "artistCollection": "***"
     },
-    "logLevel": 2
+    "logLevel": 2,
+    "releaseUpdateInterval": 1800
 }

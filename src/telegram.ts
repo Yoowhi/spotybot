@@ -71,8 +71,15 @@ export class Telegram extends EventEmitter {
         this.bot.telegram.sendMessage(chatId, BotMessages.controls);
     }
 
+    public sendRelease(chatId: number, url: string) {
+        this.sendMessage(chatId, url)
+        .then(() => {
+            // TODO log
+        });
+    }
+
     private sendMessage(chatId: number, text: string) {
-        this.bot.telegram.sendMessage(chatId, text)
+        return this.bot.telegram.sendMessage(chatId, text)
         .catch((reason) => {
             if (reason.description == "Forbidden: bot was blocked by the user") {
                 this.emit('bot_blocked', chatId)

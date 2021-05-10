@@ -29,6 +29,20 @@ export class Mongo {
         return await this.artistCollection.findOne({artistId: artistId});
     }
 
+    public async updateRelease(artistId: string, releaseId: string) {
+        const artist = await this.getArtist(artistId);
+        if (artist) {
+            return await this.artistCollection.updateOne({artistId: artistId}, {$set: {latestReleaseId: releaseId}})
+            .then(() => true);
+        } else {
+            return false;
+        }
+    }
+
+    public getArtists() {
+        return this.artistCollection.find();
+    }
+
     public async addUser(chatId: number) {
         return await this.userCollection.insertOne({chatId: chatId, subscriptions: []})
         .then((user) => true, () => false);

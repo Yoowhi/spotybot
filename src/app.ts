@@ -1,9 +1,9 @@
-import { spotify as spotyKeys, telegram as teleKey, mongo } from "./config.json";
+import { spotify as spotyKeys, telegram as teleKey, mongo, releaseUpdateInterval } from "./config.json";
 import { applog } from "./logger";
 import { Mongo } from "./mongo";
 import { Spotify } from "./spotify";
 import { Telegram } from "./telegram";
-import { LogLevel } from "./types";
+import { AlbumInfo, Artist, LogLevel } from "./types";
 
 applog("App started", LogLevel.INFO);
 const spotify = new Spotify(spotyKeys.clientId, spotyKeys.clientSecret);
@@ -25,9 +25,49 @@ spotify.init().then(() => {
             subscribeArtistRemoved();
             applog("Subscribe to Telegram events succesfull", LogLevel.INFO);
             applog("App initialized", LogLevel.INFO);
+            setInterval(() => {
+                updateArtists();
+            }, releaseUpdateInterval * 1000);
+            applog("Update interval setup successful", LogLevel.INFO, {releaseUpdateInterval});
+            updateArtists();
         });
     });
 });
+
+function updateArtists() {
+    applog("Updating artists...", LogLevel.INFO);
+    const artistIds: string[] = [];
+    db.getArtists().forEach((artist) => {
+        artistIds.push(artist.artistId);
+    })
+    .then(() => {
+        applog("Got " + artistIds.length + " artists", LogLevel.DEBUG, {artistIds});
+        spotify.getLatestAlbums(artistIds)
+        .then((albums) => {
+            applog("Got " + albums.length + " albums", LogLevel.DEBUG);
+            if (albums.length != artistIds.length) applog("Requested and received albums do not match", LogLevel.ERROR, {requested: artistIds.length, received: albums.length});
+            for (const album of albums) {
+                db.getArtist(album.artistId)
+                .then((artist) => {
+                    if (artist) {
+                        if (artist.latestReleaseId != album.albumId) {
+                            applog("Got new release", LogLevel.INFO, album);
+                            db.updateRelease(artist.artistId, album.albumId);
+                            applog("Sending releases to users", LogLevel.DEBUG, {users: artist.subscribedChatIds});
+                            for (const chatIds of artist.subscribedChatIds) {
+                                telegram.sendRelease(chatIds, album.albumUrl);
+                            }
+                        } else {
+                            applog("Artist latest release did not changed", LogLevel.DEBUG, {album});
+                        }
+                    } else {
+                        applog("Requested artist does not exist", LogLevel.ERROR, {album});
+                    }
+                });
+            }
+        });
+    });
+}
 
 function subscribeNewUser() {
     telegram.on("new_user", (chatId) => {
@@ -75,13 +115,13 @@ function subscribeArtistAdded() {
                     telegram.commandReply(chatId, 'add', success);
                 });
             } else {
-                applog("Artist not found", LogLevel.DEBUG, {artistId});
+                applog("New artist detected", LogLevel.DEBUG, {artistId});
                 applog("Requesting new artist from Spotify...", LogLevel.DEBUG, {artistId});
                 spotify.getNewArtist(artistId)
                 .then((result) => {
                     if (result) {
                         applog("New artist received", LogLevel.DEBUG, result);
-                        db.addArtist(result.artistId, result.albumUrl)
+                        db.addArtist(result.artistId, result.albumId)
                         .then((success) => {
                             if (success) {
                                 applog("New artist added", LogLevel.INFO, {artistId});
